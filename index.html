@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>YouTube</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#0f0f0f;--card:#1f1f1f;--text:#fff;--muted:#aaa;--accent:#ff0033;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:Roboto,system-ui,sans-serif;padding-bottom:24px;}
+header{position:sticky;top:0;background:var(--bg);padding:12px;z-index:10;display:flex;gap:8px;align-items:center;}
+.logo{color:var(--accent);font-weight:700;font-size:18px;white-space:nowrap;}
+.search{flex:1;display:flex;}
+.search input{flex:1;padding:10px 14px;border:none;border-radius:20px 0 0 20px;background:var(--card);color:var(--text);outline:none;font-size:14px;}
+.search button{padding:0 16px;border:none;border-radius:0 20px 20px 0;background:#333;color:#fff;cursor:pointer;font-size:16px;}
+.grid{padding:8px;display:grid;gap:18px;}
+.card{cursor:pointer;}
+.thumb{width:100%;aspect-ratio:16/9;border-radius:12px;object-fit:cover;background:#222;}
+.title{font-size:14px;font-weight:500;line-height:1.3;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.channel{font-size:12px;color:var(--muted);margin-top:4px;}
+.player{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column;}
+.player iframe{width:100%;aspect-ratio:16/9;border:none;}
+.player .back{padding:14px;background:#111;color:#fff;border:none;text-align:left;font-size:16px;cursor:pointer;}
+.player .info{padding:12px;}
+.loader{text-align:center;padding:40px;color:var(--muted);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">▶ YouTube</div>
+  <form class="search" id="searchForm">
+    <input id="q" placeholder="Поиск" autocomplete="off"/>
+    <button type="submit">🔍</button>
+  </form>
+</header>
+<div id="list" class="grid"></div>
+<div class="loader" id="loader">Загрузка…</div>
+
+<div class="player" id="player">
+  <button class="back" id="back">← Назад</button>
+  <iframe id="frame" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  <div class="info" id="pinfo"></div>
+</div>
+
+<script>
+const API_KEY = "AIzaSyDV8mHQOLn_EgdYPDddXbjhCwwBLEvgq5A";
+const REGION = "RU";
+const API = "https" + "://www.googleapis.com/youtube/v3";
+const EMBED = "https" + "://www.youtube.com/embed/";
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+const list = document.getElementById('list');
+const loader = document.getElementById('loader');
+const player = document.getElementById('player');
+const frame = document.getElementById('frame');
+const pinfo = document.getElementById('pinfo');
+
+function show(el){el.style.display='block';}
+function hide(el){el.style.display='none';}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+async function loadHome(){
+  show(loader); list.innerHTML='';
+  try{
+    const r = await fetch(API + "/videos?part=snippet&chart=mostPopular&maxResults=25&regionCode=" + REGION + "&key=" + API_KEY);
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    render(d.items.map(i=>({id:i.id,snippet:i.snippet})));
+  }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
+  hide(loader);
+}
+
+async function search(q){
+  show(loader); list.innerHTML='';
+  try{
+    const r = await fetch(API + "/search?part=snippet&type=video&maxResults=25&q=" + encodeURIComponent(q) + "&key=" + API_KEY);
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    render(d.items.map(i=>({id:i.id.videoId,snippet:i.snippet})));
+  }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
+  hide(loader);
+}
+
+function render(items){
+  list.innerHTML = items.map(v=>`
+    <div class="card" data-id="${v.id}" data-title="${esc(v.snippet.title)}" data-channel="${esc(v.snippet.channelTitle)}">
+      <img class="thumb" src="${v.snippet.thumbnails.high.url}" loading="lazy"/>
+      <div class="title">${esc(v.snippet.title)}</div>
+      <div class="channel">${esc(v.snippet.channelTitle)}</div>
+    </div>`).join('');
+}
+
+list.addEventListener('click', e=>{
+  const card = e.target.closest('.card');
+  if(!card) return;
+  playVideo(card.dataset.id, card.dataset.title, card.dataset.channel);
+});
+
+function playVideo(id,title,channel){
+  frame.src = EMBED + id + "?autoplay=1&playsinline=1";
+  pinfo.innerHTML = '<div class="title" style="-webkit-line-clamp:3">'+esc(title)+'</div><div class="channel">'+esc(channel)+'</div>';
+  player.style.display='flex';
+  if(tg){ tg.BackButton.show(); }
+}
+
+function closePlayer(){
+  frame.src='';
+  player.style.display='none';
+  if(tg){ tg.BackButton.hide(); }
+}
+
+document.getElementById('back').addEventListener('click', closePlayer);
+if(tg){ tg.BackButton.onClick(closePlayer); }
+
+document.getElementById('searchForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const q = document.getElementById('q').value.trim();
+  if(q) search(q);
+});
+
+loadHome();
+</script>
+</body>
+</html>
