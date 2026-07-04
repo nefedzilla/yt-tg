@@ -5,114 +5,259 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YouTube</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root{--bg:#0f0f0f;--card:#1f1f1f;--text:#fff;--muted:#aaa;--accent:#ff0033;}
+:root{--bg:#0f0f0f;--elev:#212121;--text:#f1f1f1;--muted:#aaa;--accent:#ff0000;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:Roboto,system-ui,sans-serif;padding-bottom:24px;}
-header{position:sticky;top:0;background:var(--bg);padding:12px;z-index:10;display:flex;gap:8px;align-items:center;}
-.logo{color:var(--accent);font-weight:700;font-size:18px;white-space:nowrap;}
+body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,system-ui,sans-serif;padding-bottom:24px;}
+header{position:sticky;top:0;background:var(--bg);padding:8px 12px;z-index:10;display:flex;gap:10px;align-items:center;border-bottom:1px solid #272727;}
+.logo{font-weight:700;font-size:19px;letter-spacing:-1px;white-space:nowrap;display:flex;align-items:center;gap:3px;}
+.logo .yt{background:var(--accent);color:#fff;border-radius:5px;padding:0 5px;font-size:14px;}
 .search{flex:1;display:flex;}
-.search input{flex:1;padding:10px 14px;border:none;border-radius:20px 0 0 20px;background:var(--card);color:var(--text);outline:none;font-size:14px;}
-.search button{padding:0 16px;border:none;border-radius:0 20px 20px 0;background:#333;color:#fff;cursor:pointer;font-size:16px;}
-.grid{padding:8px;display:grid;gap:18px;}
-.card{cursor:pointer;}
-.thumb{width:100%;aspect-ratio:16/9;border-radius:12px;object-fit:cover;background:#222;}
-.title{font-size:14px;font-weight:500;line-height:1.3;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.channel{font-size:12px;color:var(--muted);margin-top:4px;}
-.player{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column;}
-.player iframe{width:100%;aspect-ratio:16/9;border:none;}
-.player .back{padding:14px;background:#111;color:#fff;border:none;text-align:left;font-size:16px;cursor:pointer;}
-.player .info{padding:12px;}
+.search input{flex:1;padding:9px 14px;border:1px solid #303030;border-right:none;border-radius:20px 0 0 20px;background:#121212;color:var(--text);outline:none;font-size:14px;}
+.search button{padding:0 18px;border:1px solid #303030;border-radius:0 20px 20px 0;background:#222;color:#fff;cursor:pointer;font-size:15px;}
+.chips{display:flex;gap:8px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid #272727;}
+.chip{background:#272727;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;white-space:nowrap;}
+.chip.active{background:#fff;color:#0f0f0f;}
+.grid{display:flex;flex-direction:column;}
+.card{cursor:pointer;padding-bottom:14px;}
+.thumbwrap{position:relative;}
+.thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#222;display:block;}
+.dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:500;padding:1px 4px;border-radius:4px;}
+.info{display:flex;gap:10px;padding:10px 12px 0;}
+.title{font-size:14px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.channel{font-size:12px;color:var(--muted);margin-top:3px;}
+.chrow{display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;}
+.chav{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#333;}
+.chname{font-size:15px;font-weight:500;}
 .loader{text-align:center;padding:40px;color:var(--muted);}
+.watch{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column;overflow-y:auto;}
+.wbar{display:flex;align-items:center;gap:8px;padding:8px 12px;position:sticky;top:0;background:var(--bg);z-index:2;}
+.wbar button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;}
+#playerWrap{width:100%;aspect-ratio:16/9;background:#000;}
+#player,#player iframe{width:100%;height:100%;border:none;}
+.wmeta{padding:14px 12px;}
+.wtitle{font-size:16px;font-weight:600;line-height:1.35;}
+.wchannel{font-size:13px;color:var(--muted);margin-top:8px;}
+.sbnote{margin-top:12px;font-size:12px;color:#3ea6ff;min-height:16px;}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">▶ YouTube</div>
+  <div class="logo"><span class="yt">▶</span>YouTube</div>
   <form class="search" id="searchForm">
     <input id="q" placeholder="Поиск" autocomplete="off"/>
     <button type="submit">🔍</button>
   </form>
 </header>
-<div id="list" class="grid"></div>
+<div class="chips" id="chips">
+  <button class="chip active" data-tab="home">Главная</button>
+  <button class="chip" data-tab="subs">Подписки</button>
+</div>
+<main id="list" class="grid"></main>
 <div class="loader" id="loader">Загрузка…</div>
 
-<div class="player" id="player">
-  <button class="back" id="back">← Назад</button>
-  <iframe id="frame" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-  <div class="info" id="pinfo"></div>
+<div class="watch" id="watch">
+  <div class="wbar"><button id="back">←</button></div>
+  <div id="playerWrap"><div id="player"></div></div>
+  <div class="wmeta">
+    <div class="wtitle" id="wtitle"></div>
+    <div class="wchannel" id="wchannel"></div>
+    <div class="sbnote" id="sbnote"></div>
+  </div>
 </div>
 
 <script>
 const API_KEY = "AIzaSyDV8mHQOLn_EgdYPDddXbjhCwwBLEvgq5A";
+const CLIENT_ID = "232552433215-uplt2akobjerkb1dm0jf0rt2saul0n3o.apps.googleusercontent.com";
 const REGION = "RU";
 const API = "https" + "://www.googleapis.com/youtube/v3";
-const EMBED = "https" + "://www.youtube.com/embed/";
+const SB = "https" + "://sponsor.ajay.app/api/skipSegments";
+const SCOPE = "https" + "://www.googleapis.com/auth/youtube.readonly";
+const SB_CATS = ["sponsor","selfpromo","interaction","intro","outro","preview","music_offtopic"];
 const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
 
 const list = document.getElementById('list');
 const loader = document.getElementById('loader');
-const player = document.getElementById('player');
-const frame = document.getElementById('frame');
-const pinfo = document.getElementById('pinfo');
+const watch = document.getElementById('watch');
+const sbnote = document.getElementById('sbnote');
+
+let ytReady=false, player=null, segments=[], skipTimer=null;
+let accessToken=null, tokenClient=null;
+window.onYouTubeIframeAPIReady = function(){ ytReady=true; };
 
 function show(el){el.style.display='block';}
 function hide(el){el.style.display='none';}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function notify(m){ if(tg && tg.showAlert) tg.showAlert(m); else alert(m); }
+
+function fmtViews(n){ n=+n||0; if(n>=1e9)return (n/1e9).toFixed(1)+' млрд'; if(n>=1e6)return (n/1e6).toFixed(1)+' млн'; if(n>=1e3)return Math.round(n/1e3)+' тыс.'; return ''+n; }
+function fmtDur(iso){ if(!iso)return''; const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); if(!m)return''; const h=+(m[1]||0),mi=+(m[2]||0),s=+(m[3]||0); const p=x=>(''+x).padStart(2,'0'); return h?h+':'+p(mi)+':'+p(s):mi+':'+p(s); }
+
+function setTab(tab){ document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.tab===tab)); }
 
 async function loadHome(){
-  show(loader); list.innerHTML='';
+  setTab('home'); show(loader); list.innerHTML='';
   try{
-    const r = await fetch(API + "/videos?part=snippet&chart=mostPopular&maxResults=25&regionCode=" + REGION + "&key=" + API_KEY);
+    const r = await fetch(API + "/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=25&regionCode=" + REGION + "&key=" + API_KEY);
     const d = await r.json();
     if(d.error) throw new Error(d.error.message);
-    render(d.items.map(i=>({id:i.id,snippet:i.snippet})));
+    render(d.items);
   }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
   hide(loader);
 }
 
 async function search(q){
-  show(loader); list.innerHTML='';
+  setTab(''); show(loader); list.innerHTML='';
   try{
     const r = await fetch(API + "/search?part=snippet&type=video&maxResults=25&q=" + encodeURIComponent(q) + "&key=" + API_KEY);
     const d = await r.json();
     if(d.error) throw new Error(d.error.message);
-    render(d.items.map(i=>({id:i.id.videoId,snippet:i.snippet})));
+    const ids = d.items.map(i=>i.id.videoId).filter(Boolean).join(",");
+    if(!ids){ list.innerHTML='<div class="loader">Ничего не найдено</div>'; hide(loader); return; }
+    const r2 = await fetch(API + "/videos?part=snippet,statistics,contentDetails&id=" + ids + "&key=" + API_KEY);
+    const d2 = await r2.json();
+    if(d2.error) throw new Error(d2.error.message);
+    render(d2.items);
   }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
   hide(loader);
 }
 
 function render(items){
-  list.innerHTML = items.map(v=>`
-    <div class="card" data-id="${v.id}" data-title="${esc(v.snippet.title)}" data-channel="${esc(v.snippet.channelTitle)}">
-      <img class="thumb" src="${v.snippet.thumbnails.high.url}" loading="lazy"/>
-      <div class="title">${esc(v.snippet.title)}</div>
-      <div class="channel">${esc(v.snippet.channelTitle)}</div>
-    </div>`).join('');
+  list.innerHTML = (items||[]).map(v=>{
+    const dur = fmtDur(v.contentDetails && v.contentDetails.duration);
+    const views = v.statistics && v.statistics.viewCount ? fmtViews(v.statistics.viewCount)+' просмотров' : '';
+    const th = v.snippet.thumbnails.high || v.snippet.thumbnails.medium || v.snippet.thumbnails.default;
+    return '<div class="card" data-id="'+v.id+'" data-title="'+esc(v.snippet.title)+'" data-channel="'+esc(v.snippet.channelTitle)+'">'
+      +'<div class="thumbwrap"><img class="thumb" src="'+th.url+'" loading="lazy"/>'+(dur?'<span class="dur">'+dur+'</span>':'')+'</div>'
+      +'<div class="info"><div><div class="title">'+esc(v.snippet.title)+'</div>'
+      +'<div class="channel">'+esc(v.snippet.channelTitle)+(views?' • '+views:'')+'</div></div></div></div>';
+  }).join('');
+}
+
+function renderChannels(items){
+  list.innerHTML = (items||[]).map(s=>{
+    const c=s.snippet; const cid=c.resourceId.channelId;
+    const th=c.thumbnails.high||c.thumbnails.medium||c.thumbnails.default;
+    return '<div class="chrow" data-cid="'+cid+'" data-title="'+esc(c.title)+'"><img class="chav" src="'+th.url+'"/><div class="chname">'+esc(c.title)+'</div></div>';
+  }).join('');
 }
 
 list.addEventListener('click', e=>{
-  const card = e.target.closest('.card');
-  if(!card) return;
-  playVideo(card.dataset.id, card.dataset.title, card.dataset.channel);
+  const ch=e.target.closest('.chrow');
+  if(ch){ loadChannel(ch.dataset.cid, ch.dataset.title); return; }
+  const card=e.target.closest('.card');
+  if(card) openVideo(card.dataset.id, card.dataset.title, card.dataset.channel);
 });
 
-function playVideo(id,title,channel){
-  frame.src = EMBED + id + "?autoplay=1&playsinline=1";
-  pinfo.innerHTML = '<div class="title" style="-webkit-line-clamp:3">'+esc(title)+'</div><div class="channel">'+esc(channel)+'</div>';
-  player.style.display='flex';
-  if(tg){ tg.BackButton.show(); }
+function initGis(){
+  if(window.google && google.accounts && google.accounts.oauth2){
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPE,
+      callback: (resp)=>{ if(resp && resp.access_token){ accessToken = resp.access_token; showSubs(); } }
+    });
+  } else { setTimeout(initGis, 300); }
+}
+initGis();
+
+function login(){
+  if(CLIENT_ID.indexOf('ВСТАВЬ')===0){ notify('Сначала вставь OAuth Client ID в код (const CLIENT_ID).'); return; }
+  if(!tokenClient){ notify('Вход ещё грузится, попробуй через пару секунд.'); return; }
+  tokenClient.requestAccessToken();
 }
 
-function closePlayer(){
-  frame.src='';
-  player.style.display='none';
-  if(tg){ tg.BackButton.hide(); }
+async function showSubs(){
+  setTab('subs');
+  if(!accessToken){ login(); return; }
+  show(loader); list.innerHTML='';
+  try{
+    const r = await fetch(API + "/subscriptions?part=snippet&mine=true&maxResults=50&order=alphabetical", { headers:{ Authorization: "Bearer " + accessToken } });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    if(!d.items || !d.items.length){ list.innerHTML='<div class="loader">Подписок не найдено</div>'; hide(loader); return; }
+    renderChannels(d.items);
+  }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
+  hide(loader);
 }
 
-document.getElementById('back').addEventListener('click', closePlayer);
-if(tg){ tg.BackButton.onClick(closePlayer); }
+async function loadChannel(cid, title){
+  show(loader); list.innerHTML='';
+  try{
+    const r = await fetch(API + "/search?part=snippet&type=video&order=date&maxResults=25&channelId=" + cid + "&key=" + API_KEY);
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    const ids = d.items.map(i=>i.id.videoId).filter(Boolean).join(",");
+    if(!ids){ list.innerHTML='<div class="loader">Нет видео</div>'; hide(loader); return; }
+    const r2 = await fetch(API + "/videos?part=snippet,statistics,contentDetails&id=" + ids + "&key=" + API_KEY);
+    const d2 = await r2.json();
+    if(d2.error) throw new Error(d2.error.message);
+    render(d2.items);
+  }catch(e){ list.innerHTML='<div class="loader">Ошибка: '+esc(e.message)+'</div>'; }
+  hide(loader);
+}
+
+document.getElementById('chips').addEventListener('click', e=>{
+  const chip=e.target.closest('.chip'); if(!chip) return;
+  if(chip.dataset.tab==='home') loadHome(); else showSubs();
+});
+
+async function loadSegments(id){
+  segments=[]; sbnote.textContent='';
+  try{
+    const cats = encodeURIComponent(JSON.stringify(SB_CATS));
+    const r = await fetch(SB + "?videoID=" + id + "&categories=" + cats);
+    if(r.status===200){ const data=await r.json(); segments = data.map(x=>x.segment); if(segments.length) sbnote.textContent='SponsorBlock: сегментов — '+segments.length; }
+    else { sbnote.textContent='SponsorBlock: сегментов нет'; }
+  }catch(e){ sbnote.textContent=''; }
+}
+
+function skipCheck(){
+  if(!player || !player.getCurrentTime) return;
+  const t = player.getCurrentTime();
+  for(const s of segments){
+    if(t >= s[0] && t < s[1]-0.4){ player.seekTo(s[1], true); sbnote.textContent='SponsorBlock: пропущен фрагмент ⏭'; break; }
+  }
+}
+
+function onState(e){
+  if(e.data === YT.PlayerState.PLAYING){
+    if(skipTimer) clearInterval(skipTimer);
+    skipTimer = setInterval(skipCheck, 400);
+  } else if(skipTimer){ clearInterval(skipTimer); skipTimer=null; }
+}
+
+function openVideo(id,title,channel){
+  document.getElementById('wtitle').textContent = title||'';
+  document.getElementById('wchannel').textContent = channel||'';
+  watch.style.display='flex';
+  if(tg) tg.BackButton.show();
+  loadSegments(id);
+  const start=()=>{
+    if(!ytReady){ setTimeout(start,200); return; }
+    if(player){ player.loadVideoById(id); }
+    else{
+      player = new YT.Player('player', {
+        videoId:id,
+        playerVars:{autoplay:1,playsinline:1,rel:0},
+        events:{ onReady:ev=>ev.target.playVideo(), onStateChange:onState }
+      });
+    }
+  };
+  start();
+}
+
+function closeVideo(){
+  if(skipTimer){ clearInterval(skipTimer); skipTimer=null; }
+  if(player && player.stopVideo) player.stopVideo();
+  watch.style.display='none';
+  if(tg) tg.BackButton.hide();
+}
+
+document.getElementById('back').addEventListener('click', closeVideo);
+if(tg){ tg.BackButton.onClick(closeVideo); }
 
 document.getElementById('searchForm').addEventListener('submit', e=>{
   e.preventDefault();
