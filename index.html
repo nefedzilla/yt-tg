@@ -10,406 +10,246 @@
 <style>
 :root{--bg:#0f0f0f;--elev:#212121;--text:#f1f1f1;--muted:#aaa;--accent:#ff0000;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,system-ui,sans-serif;padding-bottom:24px;}
-header{position:sticky;top:0;background:var(--bg);padding:8px 12px;z-index:10;display:flex;gap:10px;align-items:center;border-bottom:1px solid #272727;}
+body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,system-ui,sans-serif;padding-bottom:66px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+header{position:sticky;top:0;background:var(--bg);padding:8px 12px;z-index:40;display:flex;gap:10px;align-items:center;border-bottom:1px solid #272727;}
 .logo{font-weight:700;font-size:19px;letter-spacing:-1px;white-space:nowrap;display:flex;align-items:center;gap:3px;}
 .logo .yt{background:var(--accent);color:#fff;border-radius:5px;padding:0 5px;font-size:14px;}
 .search{flex:1;display:flex;}
 .search input{flex:1;padding:9px 14px;border:1px solid #303030;border-right:none;border-radius:20px 0 0 20px;background:#121212;color:var(--text);outline:none;font-size:14px;}
 .search button{padding:0 18px;border:1px solid #303030;border-radius:0 20px 20px 0;background:#222;color:#fff;cursor:pointer;font-size:15px;}
 .gear{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px;}
-.suggest{position:absolute;top:100%;left:0;right:0;background:#212121;border:1px solid #303030;border-top:none;border-radius:0 0 12px 12px;max-height:60vh;overflow-y:auto;display:none;z-index:30;}
+.suggest{position:absolute;top:100%;left:0;right:0;background:#212121;border:1px solid #303030;border-top:none;border-radius:0 0 12px 12px;max-height:60vh;overflow-y:auto;display:none;z-index:50;}
 .sugrow{padding:11px 16px;font-size:14px;cursor:pointer;border-bottom:1px solid #2a2a2a;color:#ddd;}
-.chips{display:flex;gap:8px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid #272727;}
-.chip{background:#272727;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;white-space:nowrap;}
-.chip.active{background:#fff;color:#0f0f0f;}
+.ptr{position:fixed;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);opacity:0;z-index:5;transition:opacity .2s;font-size:22px;}
 #viewHeader:empty{display:none;}
 .chhead{padding:14px 12px 2px;font-size:20px;font-weight:700;}
+.chpage{overflow:hidden;}
+.chbanner{width:100%;height:100px;object-fit:cover;display:block;}
+.chpageinfo{display:flex;align-items:center;gap:12px;padding:12px;}
+.chpageav{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#333;}
+.chpagename{font-size:18px;font-weight:700;}
+.chpagesub{font-size:13px;color:var(--muted);margin-top:2px;}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px 12px;padding:12px;}
-.card{cursor:pointer;padding-bottom:6px;}
+.card{cursor:pointer;padding-bottom:6px;animation:fadeIn .25s ease both;}
 .thumbwrap{position:relative;}
 .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#222;display:block;border-radius:12px;}
 .dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:500;padding:1px 4px;border-radius:4px;}
+.prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.3);border-radius:0 0 12px 12px;overflow:hidden;}
+.prog i{display:block;height:100%;background:var(--accent);}
 .info{display:flex;gap:10px;padding:10px 2px 0;}
+.cav{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:#333;object-fit:cover;}
 .title{font-size:14px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.channel{font-size:12px;color:var(--muted);margin-top:3px;}
+.channel{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
 .chrow{display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;}
 .chav{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;}
 .chname{font-size:15px;font-weight:500;}
 .loader{text-align:center;padding:30px;color:var(--muted);grid-column:1/-1;}
-.watch{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column;overflow-y:auto;}
+.libnav{display:flex;gap:10px;padding:14px 12px;}
+.libbtn{flex:1;background:#272727;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;cursor:pointer;}
+.libsec h3{font-size:15px;font-weight:600;margin:14px 12px 0;}
+.watch{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column;overflow-y:auto;animation:slideUp .22s ease;}
+.ministrip{display:none;align-items:center;justify-content:space-between;background:#000;padding:4px 8px;}
+.ministrip button{background:none;border:none;color:#fff;font-size:14px;cursor:pointer;}
 .wbar{display:flex;align-items:center;gap:12px;padding:10px 12px;position:sticky;top:0;background:var(--bg);z-index:2;}
 .wbar button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;}
+.flex1{flex:1;}
 #playerWrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;}
 #player,#player iframe{width:100%;height:100%;border:none;}
-.skipbtn{position:absolute;right:12px;bottom:12px;z-index:5;background:rgba(0,0,0,.85);color:#fff;border:1px solid #fff;border-radius:6px;padding:8px 14px;font-size:14px;cursor:pointer;display:none;}
+.tapzone{position:absolute;top:0;bottom:48px;width:38%;z-index:4;}
+#tzLeft{left:0;} #tzRight{right:0;}
+.seekflash{position:absolute;top:50%;transform:translateY(-50%);z-index:5;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;padding:16px 18px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;}
+#flashL{left:12%;} .seekflash.right{right:12%;}
+.skipbtn{position:absolute;right:12px;bottom:12px;z-index:6;background:rgba(0,0,0,.85);color:#fff;border:1px solid #fff;border-radius:6px;padding:8px 14px;font-size:14px;cursor:pointer;display:none;}
+.resume{position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(0,0,0,.85);color:#fff;padding:8px 12px;border-radius:6px;font-size:13px;cursor:pointer;display:none;}
+.resume .rx{margin-left:10px;opacity:.7;}
 .wmeta{padding:14px 12px;}
 .wtitle{font-size:16px;font-weight:600;line-height:1.35;}
-.wchannel{font-size:13px;color:var(--muted);margin-top:8px;cursor:pointer;}
+.wstats{font-size:13px;color:var(--muted);margin-top:6px;}
+.wchannel{font-size:13px;color:#ddd;margin-top:8px;cursor:pointer;}
+.wctrls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+.wctrls button,.qsel{background:#272727;color:#fff;border:none;border-radius:18px;padding:8px 14px;font-size:13px;cursor:pointer;}
+.qsel{border:1px solid #333;}
+#wlBtn.on{background:#fff;color:#0f0f0f;}
 .sbnote{margin-top:12px;font-size:12px;color:#3ea6ff;min-height:16px;}
+.desc{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.desc.open{-webkit-line-clamp:unset;overflow:visible;}
+.descmore{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 0;display:none;}
+.cbtn{margin-top:14px;background:#272727;color:#fff;border:none;border-radius:18px;padding:9px 16px;font-size:13px;cursor:pointer;}
+.csecttl{font-size:15px;font-weight:600;margin:14px 0 6px;}
+.cmt{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #1c1c1c;}
+.cav2{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:#333;}
+.cauth{font-size:12px;color:var(--muted);}
+.ctext{font-size:14px;margin:3px 0;white-space:pre-wrap;}
+.clikes{font-size:12px;color:var(--muted);}
+.cmutex{color:var(--muted);padding:14px 2px;}
 .relttl{grid-column:1/-1;font-size:15px;font-weight:600;padding:6px 2px 0;}
-.settings{position:fixed;inset:0;background:var(--bg);z-index:120;display:none;flex-direction:column;overflow-y:auto;}
+.shorts{position:fixed;inset:0;background:#000;z-index:110;display:none;flex-direction:column;animation:fadeIn .2s ease;}
+.shortsFeed{flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;}
+.short{height:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000;}
+.shortHolder{width:100%;height:100%;}
+.shortHolder iframe{width:100%;height:100%;border:none;}
+.shortThumb{width:100%;height:100%;object-fit:contain;background:#000;}
+.shortInfo{position:absolute;left:12px;bottom:20px;right:12px;color:#fff;text-shadow:0 1px 4px #000;pointer-events:none;}
+.shortTitle{font-weight:600;font-size:15px;}
+.shortCh{font-size:13px;opacity:.9;margin-top:4px;}
+.settings{position:fixed;inset:0;background:var(--bg);z-index:120;display:none;flex-direction:column;overflow-y:auto;animation:slideUp .22s ease;}
 .setttl{font-size:16px;font-weight:600;}
 .setbody{padding:8px 14px;}
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid #222;font-size:14px;}
 .setrow select{background:#222;color:#fff;border:1px solid #333;border-radius:6px;padding:6px;font-size:13px;}
 .setrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);}
 .sethint{color:var(--muted);font-size:12px;padding:12px 2px;}
+.tabbar{position:fixed;left:0;right:0;bottom:0;height:58px;background:#0f0f0f;border-top:1px solid #272727;display:flex;z-index:90;}
+.tabitem{flex:1;background:none;border:none;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;}
+.tabitem .ic{font-size:19px;}
+.tabitem.active{color:#fff;}
+.watch.mini{inset:auto;bottom:70px;right:8px;width:230px;height:auto;border-radius:12px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.7);animation:none;}
+.watch.mini .wbar,.watch.mini .wmeta,.watch.mini #related{display:none;}
+.watch.mini .ministrip{display:flex;}
+.watch.mini .tapzone{display:none;}
 </style>
 </head>
 <body>
 <header>
   <div class="logo"><span class="yt">▶</span>YouTube</div>
-  <form class="search" id="searchForm">
-    <input id="q" placeholder="Поиск" autocomplete="off"/>
-    <button type="submit">🔍</button>
-  </form>
+  <form class="search" id="searchForm"><input id="q" placeholder="Поиск" autocomplete="off"/><button type="submit">🔍</button></form>
   <button class="gear" id="gear" title="Настройки SponsorBlock">⚙️</button>
   <div class="suggest" id="suggest"></div>
 </header>
-<div class="chips" id="chips">
-  <button class="chip active" data-tab="home">Главная</button>
-  <button class="chip" data-tab="subs">Подписки</button>
-  <button class="chip" data-tab="liked">Понравившиеся</button>
-  <button class="chip" data-tab="playlists">Плейлисты</button>
-</div>
+<div class="ptr" id="ptr">↻</div>
 <div id="viewHeader"></div>
 <main id="list" class="grid"></main>
 <div class="loader" id="loader">Загрузка…</div>
 
 <div class="watch" id="watch">
-  <div class="wbar"><button id="back">←</button></div>
-  <div id="playerWrap"><div id="player"></div><button class="skipbtn" id="skipBtn">Пропустить ⏭</button></div>
+  <div class="ministrip"><button id="expandBtn">⤢ Развернуть</button><button id="miniCloseBtn">✕</button></div>
+  <div class="wbar"><button id="back">←</button><span class="flex1"></span><button id="miniBtn" title="Свернуть">▽</button></div>
+  <div id="playerWrap">
+    <div id="player"></div>
+    <div class="tapzone" id="tzLeft"></div>
+    <div class="tapzone" id="tzRight"></div>
+    <div class="seekflash" id="flashL">-10</div>
+    <div class="seekflash right" id="flashR">+10</div>
+    <button class="skipbtn" id="skipBtn">Пропустить ⏭</button>
+    <div class="resume" id="resume"></div>
+  </div>
   <div class="wmeta">
     <div class="wtitle" id="wtitle"></div>
+    <div class="wstats" id="wstats"></div>
     <div class="wchannel" id="wchannel"></div>
+    <div class="wctrls">
+      <button id="speedBtn">1×</button>
+      <select id="qualitySel" class="qsel"><option>Авто</option></select>
+      <button id="wlBtn">＋ Смотреть позже</button>
+    </div>
     <div class="sbnote" id="sbnote"></div>
+    <div class="desc" id="desc"></div>
+    <button class="descmore" id="descMore">…ещё</button>
+    <div><button class="cbtn" id="loadComments">💬 Показать комментарии</button></div>
+    <div id="commentsBox"></div>
   </div>
   <div class="grid" id="related"></div>
+</div>
+
+<div class="shorts" id="shorts">
+  <div class="wbar" style="background:#000"><button id="shortsBack">←</button><span class="setttl">Shorts</span></div>
+  <div class="shortsFeed" id="shortsFeed"></div>
 </div>
 
 <div class="settings" id="settings">
   <div class="wbar"><button id="setBack">←</button><span class="setttl">Настройки SponsorBlock</span></div>
   <div class="setbody">
     <div class="setrow"><span>Режим</span>
-      <select id="modeSel">
-        <option value="auto">Пропускать автоматически</option>
-        <option value="button">Показывать кнопку «Пропустить»</option>
-      </select>
+      <select id="modeSel"><option value="auto">Пропускать автоматически</option><option value="button">Показывать кнопку «Пропустить»</option></select>
     </div>
     <div class="sethint">Какие категории пропускать:</div>
     <div id="catList"></div>
   </div>
 </div>
 
+<nav class="tabbar" id="tabbar">
+  <button class="tabitem active" data-nav="home"><span class="ic">🏠</span>Главная</button>
+  <button class="tabitem" data-nav="shorts"><span class="ic">⚡</span>Shorts</button>
+  <button class="tabitem" data-nav="subs"><span class="ic">📺</span>Подписки</button>
+  <button class="tabitem" data-nav="library"><span class="ic">🎬</span>Библиотека</button>
+</nav>
+
 <script>
-const API_KEY = "AIzaSyDV8mHQOLn_EgdYPDddXbjhCwwBLEvgq5A";
-const CLIENT_ID = "232552433215-uplt2akobjerkb1dm0jf0rt2saul0n3o.apps.googleusercontent.com";
-const REGION = "RU";
-const API = "https" + "://www.googleapis.com/youtube/v3";
-const SB = "https" + "://sponsor.ajay.app/api/skipSegments";
-const SCOPE = "https" + "://www.googleapis.com/auth/youtube.readonly";
-const SB_ALL = [
-  {id:"sponsor", name:"Спонсорская вставка"},
-  {id:"selfpromo", name:"Самореклама / свои проекты"},
-  {id:"interaction", name:"Просьба подписаться / лайк"},
-  {id:"intro", name:"Интро / заставка"},
-  {id:"outro", name:"Аутро / конечные титры"},
-  {id:"preview", name:"Превью / анонс"},
-  {id:"filler", name:"Отступления (filler)"},
-  {id:"music_offtopic", name:"Немузыкальные части (в клипах)"}
-];
-const SB_NAMES = {}; SB_ALL.forEach(c=>SB_NAMES[c.id]=c.name);
-const tg = window.Telegram && window.Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+const API_KEY="AIzaSyDV8mHQOLn_EgdYPDddXbjhCwwBLEvgq5A";
+const CLIENT_ID="232552433215-uplt2akobjerkb1dm0jf0rt2saul0n3o.apps.googleusercontent.com";
+const REGION="RU";
+const API="https"+"://www.googleapis.com/youtube/v3";
+const SB="https"+"://sponsor.ajay.app/api/skipSegments";
+const SCOPE="https"+"://www.googleapis.com/auth/youtube.readonly";
+const YT_IMG="https"+"://i.ytimg.com/vi/";
+const SB_ALL=[{id:"sponsor",name:"Спонсорская вставка"},{id:"selfpromo",name:"Самореклама / свои проекты"},{id:"interaction",name:"Просьба подписаться / лайк"},{id:"intro",name:"Интро / заставка"},{id:"outro",name:"Аутро / конечные титры"},{id:"preview",name:"Превью / анонс"},{id:"filler",name:"Отступления (filler)"},{id:"music_offtopic",name:"Немузыкальные части (в клипах)"}];
+const SB_NAMES={}; SB_ALL.forEach(c=>SB_NAMES[c.id]=c.name);
+const tg=window.Telegram&&window.Telegram.WebApp; if(tg){tg.ready();tg.expand();}
 
-const list = document.getElementById('list');
-const loader = document.getElementById('loader');
-const watch = document.getElementById('watch');
-const settingsEl = document.getElementById('settings');
-const sbnote = document.getElementById('sbnote');
-const skipBtn = document.getElementById('skipBtn');
-const viewHeader = document.getElementById('viewHeader');
-const qInput = document.getElementById('q');
-const suggest = document.getElementById('suggest');
-const relatedBox = document.getElementById('related');
+const list=document.getElementById('list'),loader=document.getElementById('loader'),watch=document.getElementById('watch'),shortsEl=document.getElementById('shorts'),settingsEl=document.getElementById('settings');
+const sbnote=document.getElementById('sbnote'),skipBtn=document.getElementById('skipBtn'),viewHeader=document.getElementById('viewHeader'),qInput=document.getElementById('q'),suggest=document.getElementById('suggest'),relatedBox=document.getElementById('related'),ptr=document.getElementById('ptr');
 
-let ytReady=false, player=null, segments=[], skipTimer=null, skipTarget=null;
-let accessToken=null, tokenExp=0, tokenClient=null, pendingAuthAction=null, triedSilent=false;
-let view={type:'home'}, pageToken='', loadingMore=false, endReached=false;
-window.onYouTubeIframeAPIReady = function(){ ytReady=true; };
+let ytReady=false,player=null,segments=[],skipTimer=null,skipTarget=null,tick=0,curId=null,curSpeed=1;
+let accessToken=null,tokenExp=0,tokenClient=null,pendingAuthAction=null,triedSilent=false;
+let view={type:'home'},pageToken='',loadingMore=false,endReached=false;
+let shortsPlayer=null,shortsItems=[],shortsObserver=null,shortsLoaded=false;
+let chAvatars={}; try{chAvatars=JSON.parse(sessionStorage.getItem('avatars')||'{}');}catch(e){}
+let resume={}; try{resume=JSON.parse(localStorage.getItem('resume')||'{}');}catch(e){}
+let history=[],watchLater=[];
+window.onYouTubeIframeAPIReady=function(){ytReady=true;};
 
-let settings = loadSettings();
-function loadSettings(){
-  try{ const s=JSON.parse(localStorage.getItem('sbSettings')); if(s && s.cats) return s; }catch(e){}
-  const cats={}; SB_ALL.forEach(c=>cats[c.id]=true);
-  return { cats:cats, mode:"auto" };
-}
-function saveSettings(){ try{ localStorage.setItem('sbSettings', JSON.stringify(settings)); }catch(e){} }
+// ---------- storage (Telegram Cloud + localStorage) ----------
+const CS=(tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9'))?tg.CloudStorage:null;
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function storeGet(k){return new Promise(res=>{ if(CS) CS.getItem(k,(e,v)=>res((!e&&v)?v:lsGet(k))); else res(lsGet(k)); });}
+function storeSet(k,v){lsSet(k,v); if(CS){try{CS.setItem(k,v,()=>{});}catch(e){}}}
+async function getArr(k){try{const v=await storeGet(k);return v?JSON.parse(v):[];}catch(e){return [];}}
+function setArr(k,a){storeSet(k,JSON.stringify(a));}
+function saveResume(){lsSet('resume',JSON.stringify(resume));}
+(async()=>{ history=await getArr('yt_history'); watchLater=await getArr('yt_wl'); })();
 
-function show(el){el.style.display='block';}
-function hide(el){el.style.display='none';}
+function addHistory(id,t,c,ch){ history=history.filter(x=>x.id!==id); history.unshift({id:id,t:(t||'').slice(0,80),c:(c||'').slice(0,50),ch:ch||''}); history=history.slice(0,30); setArr('yt_history',history); }
+function inWL(id){return watchLater.some(x=>x.id===id);}
+function toggleWL(id,t,c,ch){ if(inWL(id)) watchLater=watchLater.filter(x=>x.id!==id); else { watchLater.unshift({id:id,t:(t||'').slice(0,80),c:(c||'').slice(0,50),ch:ch||''}); watchLater=watchLater.slice(0,40);} setArr('yt_wl',watchLater); }
+
+// ---------- helpers ----------
+function show(el){el.style.display='block';} function hide(el){el.style.display='none';}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function notify(m){ if(tg && tg.showAlert) tg.showAlert(m); else alert(m); }
-function fmtViews(n){ n=+n||0; if(n>=1e9)return (n/1e9).toFixed(1)+' млрд'; if(n>=1e6)return (n/1e6).toFixed(1)+' млн'; if(n>=1e3)return Math.round(n/1e3)+' тыс.'; return ''+n; }
-function fmtDur(iso){ if(!iso)return''; const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); if(!m)return''; const h=+(m[1]||0),mi=+(m[2]||0),s=+(m[3]||0); const p=x=>(''+x).padStart(2,'0'); return h?h+':'+p(mi)+':'+p(s):mi+':'+p(s); }
-function setTab(tab){ document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.tab===tab)); }
+function notify(m){if(tg&&tg.showAlert)tg.showAlert(m);else alert(m);}
+function haptic(){if(tg&&tg.HapticFeedback)try{tg.HapticFeedback.impactOccurred('light');}catch(e){}}
+function fmtViews(n){n=+n||0;if(n>=1e9)return (n/1e9).toFixed(1)+' млрд';if(n>=1e6)return (n/1e6).toFixed(1)+' млн';if(n>=1e3)return Math.round(n/1e3)+' тыс.';return ''+n;}
+function parseDur(iso){if(!iso)return 0;const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return (+(m[1]||0))*3600+(+(m[2]||0))*60+(+(m[3]||0));}
+function fmtClock(sec){sec=Math.floor(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60,p=x=>(''+x).padStart(2,'0');return h?h+':'+p(m)+':'+p(s):m+':'+p(s);}
+function fmtDur(iso){const s=parseDur(iso);return s?fmtClock(s):'';}
+function fmtAgo(s){const sec=(Date.now()-new Date(s).getTime())/1000;if(sec<3600)return Math.max(1,Math.floor(sec/60))+' мин назад';if(sec<86400)return Math.floor(sec/3600)+' ч назад';const d=Math.floor(sec/86400);if(d<30)return d+' дн назад';const mo=Math.floor(d/30);if(mo<12)return mo+' мес назад';return Math.floor(d/365)+' г назад';}
+function setNav(n){document.querySelectorAll('.tabitem').forEach(b=>b.classList.toggle('active',b.dataset.nav===n));}
+function setListGrid(on){list.classList.toggle('grid',on);}
+async function fetchJson(url,opts){const r=await fetch(url,opts);const d=await r.json();if(d.error)throw d.error;return d;}
+const memCache={};
+async function fetchCached(url,ttl){const now=Date.now();if(memCache[url]&&now-memCache[url].t<ttl)return memCache[url].d;try{const raw=sessionStorage.getItem('c:'+url);if(raw){const o=JSON.parse(raw);if(now-o.t<ttl){memCache[url]=o;return o.d;}}}catch(e){}const d=await fetchJson(url);memCache[url]={t:now,d:d};try{sessionStorage.setItem('c:'+url,JSON.stringify({t:now,d:d}));}catch(e){}return d;}
+function showErr(err){let msg=(err&&err.message)?err.message:String(err);const reason=err&&err.errors&&err.errors[0]&&err.errors[0].reason;if(reason==='quotaExceeded'||/quota/i.test(msg))msg='Превышен дневной лимит YouTube API. Попробуй позже (лимит сбрасывается раз в сутки).';else if(/act on behalf/i.test(msg))msg='У этого Google-аккаунта нет YouTube-канала, либо подписки на бренд-аккаунте.';if(list.querySelector('.card')){console.warn(msg);return;}list.innerHTML='<div class="loader">Ошибка: '+esc(msg)+'</div>';}
 
-function showErr(err){
-  let msg=(err && err.message)?err.message:String(err);
-  const reason=err && err.errors && err.errors[0] && err.errors[0].reason;
-  if(reason==='quotaExceeded' || /quota/i.test(msg)) msg='Превышен дневной лимит YouTube API. Попробуй позже (лимит сбрасывается раз в сутки).';
-  else if(/act on behalf/i.test(msg)) msg='У этого Google-аккаунта нет YouTube-канала, либо подписки на бренд-аккаунте.';
-  if(list.querySelector('.card')){ console.warn(msg); return; }
-  list.innerHTML='<div class="loader">Ошибка: '+esc(msg)+'</div>';
-}
-
-// ---- auth (token persistence + silent refresh) ----
-function loadToken(){ try{ const s=JSON.parse(localStorage.getItem('ytToken')); if(s && s.token && s.exp>Date.now()){ accessToken=s.token; tokenExp=s.exp; } }catch(e){} }
+// ---------- auth ----------
+function loadToken(){try{const s=JSON.parse(localStorage.getItem('ytToken'));if(s&&s.token&&s.exp>Date.now()){accessToken=s.token;tokenExp=s.exp;}}catch(e){}}
 loadToken();
-function hasToken(){ return !!accessToken && tokenExp>Date.now(); }
-function auth(){ return { headers:{ Authorization:"Bearer "+accessToken } }; }
-function initGis(){
-  if(window.google && google.accounts && google.accounts.oauth2){
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID, scope: SCOPE,
-      callback:(resp)=>{
-        triedSilent=false;
-        if(resp && resp.access_token){
-          accessToken=resp.access_token;
-          tokenExp=Date.now()+((resp.expires_in?+resp.expires_in:3600)*1000)-60000;
-          try{ localStorage.setItem('ytToken', JSON.stringify({token:accessToken,exp:tokenExp})); }catch(e){}
-          const act=pendingAuthAction; pendingAuthAction=null; if(act) act();
-        }
-      },
-      error_callback:(err)=>{
-        if(triedSilent){ triedSilent=false; try{ tokenClient.requestAccessToken(); }catch(e){} }
-        else { pendingAuthAction=null; notify('Не удалось войти в аккаунт Google.'); }
-      }
-    });
-  } else setTimeout(initGis,300);
-}
+function hasToken(){return !!accessToken&&tokenExp>Date.now();}
+function auth(){return {headers:{Authorization:"Bearer "+accessToken}};}
+function initGis(){if(window.google&&google.accounts&&google.accounts.oauth2){tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPE,callback:(resp)=>{triedSilent=false;if(resp&&resp.access_token){accessToken=resp.access_token;tokenExp=Date.now()+((resp.expires_in?+resp.expires_in:3600)*1000)-60000;try{localStorage.setItem('ytToken',JSON.stringify({token:accessToken,exp:tokenExp}));}catch(e){}const a=pendingAuthAction;pendingAuthAction=null;if(a)a();}},error_callback:(err)=>{if(triedSilent){triedSilent=false;try{tokenClient.requestAccessToken();}catch(e){}}else{pendingAuthAction=null;notify('Не удалось войти в аккаунт Google.');}}});}else setTimeout(initGis,300);}
 initGis();
-function withAuth(action){
-  if(hasToken()){ action(); return; }
-  pendingAuthAction=action;
-  if(!tokenClient){ notify('Вход ещё грузится, попробуй через пару секунд.'); return; }
-  triedSilent=true;
-  try{ tokenClient.requestAccessToken({prompt:''}); }catch(e){ triedSilent=false; tokenClient.requestAccessToken(); }
-}
+function withAuth(action){if(hasToken()){action();return;}pendingAuthAction=action;if(!tokenClient){notify('Вход ещё грузится, попробуй через пару секунд.');return;}triedSilent=true;try{tokenClient.requestAccessToken({prompt:''});}catch(e){triedSilent=false;tokenClient.requestAccessToken();}}
 
-// ---- rendering ----
-function cardHtml(v){
-  const dur=fmtDur(v.contentDetails && v.contentDetails.duration);
-  const views=v.statistics && v.statistics.viewCount ? fmtViews(v.statistics.viewCount)+' просмотров' : '';
-  const th=v.snippet.thumbnails.high||v.snippet.thumbnails.medium||v.snippet.thumbnails.default;
-  return '<div class="card" data-id="'+v.id+'" data-cid="'+esc(v.snippet.channelId)+'" data-title="'+esc(v.snippet.title)+'" data-channel="'+esc(v.snippet.channelTitle)+'">'
-    +'<div class="thumbwrap"><img class="thumb" src="'+(th?th.url:'')+'" loading="lazy"/>'+(dur?'<span class="dur">'+dur+'</span>':'')+'</div>'
-    +'<div class="info"><div><div class="title">'+esc(v.snippet.title)+'</div>'
-    +'<div class="channel">'+esc(v.snippet.channelTitle)+(views?' • '+views:'')+'</div></div></div></div>';
-}
-function appendVideos(items){ list.insertAdjacentHTML('beforeend',(items||[]).map(cardHtml).join('')); }
-async function fetchJson(url, opts){ const r=await fetch(url,opts); const d=await r.json(); if(d.error) throw d.error; return d; }
+// ---------- cards ----------
+function cardHtml(v){const durSec=parseDur(v.contentDetails&&v.contentDetails.duration),dur=durSec?fmtClock(durSec):'';const views=v.statistics&&v.statistics.viewCount?fmtViews(v.statistics.viewCount)+' просмотров':'';const ago=v.snippet.publishedAt?fmtAgo(v.snippet.publishedAt):'';const th=v.snippet.thumbnails.high||v.snippet.thumbnails.medium||v.snippet.thumbnails.default;const cid=v.snippet.channelId||'';let prog='';if(resume[v.id]&&durSec>0){const p=Math.min(100,Math.round(resume[v.id]/durSec*100));if(p>2)prog='<div class="prog"><i style="width:'+p+'%"></i></div>';}const av=chAvatars[cid]||'';const meta=[views,ago].filter(Boolean).join(' • ');return '<div class="card" data-id="'+v.id+'" data-cid="'+esc(cid)+'" data-title="'+esc(v.snippet.title)+'" data-channel="'+esc(v.snippet.channelTitle)+'"><div class="thumbwrap"><img class="thumb" src="'+(th?th.url:'')+'" loading="lazy"/>'+(dur?'<span class="dur">'+dur+'</span>':'')+prog+'</div><div class="info"><img class="cav" data-cid="'+esc(cid)+'" src="'+av+'" '+(av?'':'style="visibility:hidden"')+'/><div><div class="title">'+esc(v.snippet.title)+'</div><div class="channel">'+esc(v.snippet.channelTitle)+(meta?'<br>'+meta:'')+'</div></div></div></div>';}
+function histCard(x){const th=YT_IMG+x.id+'/mqdefault.jpg';const av=chAvatars[x.ch]||'';return '<div class="card" data-id="'+x.id+'" data-cid="'+esc(x.ch)+'" data-title="'+esc(x.t)+'" data-channel="'+esc(x.c)+'"><div class="thumbwrap"><img class="thumb" src="'+th+'" loading="lazy"/></div><div class="info"><img class="cav" data-cid="'+esc(x.ch)+'" src="'+av+'" '+(av?'':'style="visibility:hidden"')+'/><div><div class="title">'+esc(x.t)+'</div><div class="channel">'+esc(x.c)+'</div></div></div></div>';}
+function appendVideos(items){list.insertAdjacentHTML('beforeend',(items||[]).map(cardHtml).join(''));fillAvatars();}
+async function fillAvatars(){const need=[];document.querySelectorAll('.cav[data-cid]').forEach(el=>{const c=el.dataset.cid;if(c&&!chAvatars[c]&&need.indexOf(c)<0)need.push(c);});for(let i=0;i<need.length;i+=50){const batch=need.slice(i,i+50);try{const d=await fetchCached(API+"/channels?part=snippet&id="+batch.join(",")+"&key="+API_KEY,3600000);(d.items||[]).forEach(c=>{const t=c.snippet.thumbnails&&(c.snippet.thumbnails.default||c.snippet.thumbnails.medium);chAvatars[c.id]=t?t.url:'';});}catch(e){}}try{sessionStorage.setItem('avatars',JSON.stringify(chAvatars));}catch(e){}document.querySelectorAll('.cav[data-cid]').forEach(el=>{const u=chAvatars[el.dataset.cid];if(u){el.src=u;el.style.visibility='visible';}});}
 
-// ---- views ----
-async function loadHome(reset){
-  if(reset){ view={type:'home'}; pageToken=''; endReached=false; setTab('home'); viewHeader.innerHTML=''; list.innerHTML=''; }
-  if(endReached||loadingMore) return;
-  loadingMore=true; show(loader);
-  try{
-    const d=await fetchJson(API+"/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=20&regionCode="+REGION+(pageToken?"&pageToken="+pageToken:"")+"&key="+API_KEY);
-    appendVideos(d.items); pageToken=d.nextPageToken||''; if(!pageToken) endReached=true;
-  }catch(e){ showErr(e); }
-  loadingMore=false; hide(loader);
-}
-async function runSearch(q, reset){
-  if(reset){ view={type:'search',q:q}; pageToken=''; endReached=false; setTab(''); viewHeader.innerHTML=''; list.innerHTML=''; }
-  if(endReached||loadingMore) return;
-  loadingMore=true; show(loader);
-  try{
-    const d=await fetchJson(API+"/search?part=snippet&type=video&maxResults=20&q="+encodeURIComponent(view.q)+(pageToken?"&pageToken="+pageToken:"")+"&key="+API_KEY);
-    pageToken=d.nextPageToken||''; if(!pageToken) endReached=true;
-    const ids=d.items.map(i=>i.id.videoId).filter(Boolean).join(",");
-    if(ids){ const d2=await fetchJson(API+"/videos?part=snippet,statistics,contentDetails&id="+ids+"&key="+API_KEY); appendVideos(d2.items); }
-    else if(reset){ list.innerHTML='<div class="loader">Ничего не найдено</div>'; }
-  }catch(e){ showErr(e); }
-  loadingMore=false; hide(loader);
-}
-async function loadChannel(cid, title, reset){
-  if(reset){ view={type:'channel',cid:cid,title:title}; pageToken=''; endReached=false; setTab(''); list.innerHTML=''; viewHeader.innerHTML='<div class="chhead">'+esc(title||'Канал')+'</div>'; window.scrollTo(0,0); }
-  if(endReached||loadingMore) return;
-  loadingMore=true; show(loader);
-  try{
-    const d=await fetchJson(API+"/search?part=snippet&type=video&order=date&maxResults=20&channelId="+view.cid+(pageToken?"&pageToken="+pageToken:"")+"&key="+API_KEY);
-    pageToken=d.nextPageToken||''; if(!pageToken) endReached=true;
-    const ids=d.items.map(i=>i.id.videoId).filter(Boolean).join(",");
-    if(ids){ const d2=await fetchJson(API+"/videos?part=snippet,statistics,contentDetails&id="+ids+"&key="+API_KEY); appendVideos(d2.items); }
-  }catch(e){ showErr(e); }
-  loadingMore=false; hide(loader);
-}
-async function loadPlaylistPage(reset){
-  if(reset){ pageToken=''; endReached=false; setTab(view.tab||''); list.innerHTML=''; viewHeader.innerHTML=view.title?'<div class="chhead">'+esc(view.title)+'</div>':''; window.scrollTo(0,0); }
-  if(endReached||loadingMore) return;
-  loadingMore=true; show(loader);
-  try{
-    const d=await fetchJson(API+"/playlistItems?part=contentDetails&maxResults=20&playlistId="+view.plId+(pageToken?"&pageToken="+pageToken:""), auth());
-    pageToken=d.nextPageToken||''; if(!pageToken) endReached=true;
-    const ids=d.items.map(i=>i.contentDetails.videoId).filter(Boolean).join(",");
-    if(ids){ const d2=await fetchJson(API+"/videos?part=snippet,statistics,contentDetails&id="+ids+"&key="+API_KEY); appendVideos(d2.items); }
-    else if(reset){ list.innerHTML='<div class="loader">Пусто</div>'; }
-  }catch(e){ showErr(e); }
-  loadingMore=false; hide(loader);
-}
-function showSubs(){
-  view={type:'subs'}; setTab('subs'); viewHeader.innerHTML='';
-  withAuth(async ()=>{
-    show(loader); list.innerHTML='';
-    try{
-      const d=await fetchJson(API+"/subscriptions?part=snippet&mine=true&maxResults=50&order=alphabetical", auth());
-      if(!d.items||!d.items.length){ list.innerHTML='<div class="loader">Подписок не найдено</div>'; hide(loader); return; }
-      list.innerHTML=d.items.map(s=>{ const c=s.snippet; const cid=c.resourceId.channelId; const th=c.thumbnails.high||c.thumbnails.medium||c.thumbnails.default;
-        return '<div class="chrow" data-cid="'+cid+'" data-title="'+esc(c.title)+'"><img class="chav" src="'+(th?th.url:'')+'"/><div class="chname">'+esc(c.title)+'</div></div>'; }).join('');
-    }catch(e){ showErr(e); }
-    hide(loader);
-  });
-}
-function showLiked(){
-  setTab('liked'); viewHeader.innerHTML='';
-  withAuth(async ()=>{
-    show(loader); list.innerHTML='';
-    try{
-      const ch=await fetchJson(API+"/channels?part=contentDetails&mine=true", auth());
-      const likesId = ch.items && ch.items[0] && ch.items[0].contentDetails.relatedPlaylists.likes;
-      if(!likesId){ list.innerHTML='<div class="loader">Понравившиеся недоступны для этого аккаунта</div>'; hide(loader); return; }
-      hide(loader);
-      view={type:'playlist', plId:likesId, tab:'liked', title:'Понравившиеся'};
-      loadPlaylistPage(true);
-    }catch(e){ showErr(e); hide(loader); }
-  });
-}
-function showPlaylists(){
-  view={type:'playlists'}; setTab('playlists'); viewHeader.innerHTML='';
-  withAuth(async ()=>{
-    show(loader); list.innerHTML='';
-    try{
-      const d=await fetchJson(API+"/playlists?part=snippet,contentDetails&mine=true&maxResults=50", auth());
-      if(!d.items || !d.items.length){ list.innerHTML='<div class="loader">Плейлистов нет</div>'; hide(loader); return; }
-      list.innerHTML=d.items.map(p=>{ const th=p.snippet.thumbnails.medium||p.snippet.thumbnails.default; const cnt=p.contentDetails.itemCount;
-        return '<div class="chrow" data-pl="'+p.id+'" data-title="'+esc(p.snippet.title)+'"><img class="chav" style="border-radius:8px" src="'+(th?th.url:'')+'"/><div><div class="chname">'+esc(p.snippet.title)+'</div><div class="channel">'+cnt+' видео</div></div></div>'; }).join('');
-    }catch(e){ showErr(e); }
-    hide(loader);
-  });
-}
-
-list.addEventListener('click', e=>{
-  const pl=e.target.closest('[data-pl]');
-  if(pl){ view={type:'playlist', plId:pl.dataset.pl, tab:'', title:pl.dataset.title}; loadPlaylistPage(true); return; }
-  const ch=e.target.closest('.chrow');
-  if(ch){ loadChannel(ch.dataset.cid, ch.dataset.title, true); return; }
-  const card=e.target.closest('.card');
-  if(card) openVideo(card.dataset.id, card.dataset.title, card.dataset.channel, card.dataset.cid);
-});
-window.addEventListener('scroll', ()=>{
-  if(watch.style.display==='flex'||settingsEl.style.display==='flex') return;
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 700) loadMore();
-});
-function loadMore(){
-  if(loadingMore||endReached) return;
-  if(view.type==='home') loadHome(false);
-  else if(view.type==='search') runSearch(null,false);
-  else if(view.type==='channel') loadChannel(null,null,false);
-  else if(view.type==='playlist') loadPlaylistPage(false);
-}
-document.getElementById('chips').addEventListener('click', e=>{
-  const chip=e.target.closest('.chip'); if(!chip) return;
-  const t=chip.dataset.tab;
-  if(t==='home') loadHome(true);
-  else if(t==='subs') showSubs();
-  else if(t==='liked') showLiked();
-  else if(t==='playlists') showPlaylists();
-});
-
-// ---- SponsorBlock ----
-async function loadSegments(id){
-  segments=[]; sbnote.textContent=''; hideSkip();
-  const enabled=SB_ALL.filter(c=>settings.cats[c.id]).map(c=>c.id);
-  if(!enabled.length){ sbnote.textContent='SponsorBlock выключен (нет выбранных категорий)'; return; }
-  try{
-    const cats=encodeURIComponent(JSON.stringify(enabled));
-    const r=await fetch(SB+"?videoID="+id+"&categories="+cats);
-    if(r.status===200){ const data=await r.json(); segments=data.map(x=>({start:x.segment[0],end:x.segment[1],cat:x.category})); if(segments.length) sbnote.textContent='SponsorBlock: сегментов — '+segments.length; }
-    else sbnote.textContent='SponsorBlock: сегментов нет';
-  }catch(e){ sbnote.textContent=''; }
-}
-function showSkip(seg){ skipTarget=seg.end; skipBtn.textContent='Пропустить: '+(SB_NAMES[seg.cat]||'фрагмент')+' ⏭'; skipBtn.style.display='block'; }
-function hideSkip(){ skipTarget=null; skipBtn.style.display='none'; }
-skipBtn.addEventListener('click', ()=>{ if(player && skipTarget!=null){ player.seekTo(skipTarget,true); hideSkip(); } });
-function skipCheck(){
-  if(!player || !player.getCurrentTime) return;
-  const t=player.getCurrentTime(); let seg=null;
-  for(const s of segments){ if(t>=s.start && t<s.end-0.4){ seg=s; break; } }
-  if(seg){ if(settings.mode==='auto'){ player.seekTo(seg.end,true); sbnote.textContent='SponsorBlock: пропущено — '+(SB_NAMES[seg.cat]||'фрагмент')+' ⏭'; hideSkip(); } else showSkip(seg); }
-  else hideSkip();
-}
-function onState(e){ if(e.data===YT.PlayerState.PLAYING){ if(skipTimer) clearInterval(skipTimer); skipTimer=setInterval(skipCheck,400); } else if(skipTimer){ clearInterval(skipTimer); skipTimer=null; } }
-
-// ---- watch + related ----
-function openVideo(id,title,channel,cid){
-  document.getElementById('wtitle').textContent=title||'';
-  const wch=document.getElementById('wchannel'); wch.textContent=channel||''; wch.dataset.cid=cid||'';
-  watch.style.display='flex'; watch.scrollTop=0; updateBack();
-  loadSegments(id); loadRelated(cid,id);
-  const start=()=>{ if(!ytReady){ setTimeout(start,200); return; }
-    if(player) player.loadVideoById(id);
-    else player=new YT.Player('player',{videoId:id,playerVars:{autoplay:1,playsinline:1,rel:0},events:{onReady:ev=>ev.target.playVideo(),onStateChange:onState}}); };
-  start();
-}
-function closeVideo(){ if(skipTimer){ clearInterval(skipTimer); skipTimer=null; } if(player && player.stopVideo) player.stopVideo(); hideSkip(); watch.style.display='none'; updateBack(); }
-async function loadRelated(cid, excludeId){
-  relatedBox.innerHTML=''; if(!cid) return;
-  relatedBox.innerHTML='<div class="loader">Похожие…</div>';
-  try{
-    const d=await fetchJson(API+"/search?part=snippet&type=video&order=date&maxResults=16&channelId="+cid+"&key="+API_KEY);
-    const ids=d.items.map(i=>i.id.videoId).filter(x=>x&&x!==excludeId).slice(0,12).join(",");
-    if(!ids){ relatedBox.innerHTML=''; return; }
-    const d2=await fetchJson(API+"/videos?part=snippet,statistics,contentDetails&id="+ids+"&key="+API_KEY);
-    relatedBox.innerHTML='<div class="relttl">Ещё с этого канала</div>'+d2.items.map(cardHtml).join('');
-  }catch(e){ relatedBox.innerHTML=''; }
-}
-relatedBox.addEventListener('click', e=>{ const c=e.target.closest('.card'); if(c) openVideo(c.dataset.id,c.dataset.title,c.dataset.channel,c.dataset.cid); });
-document.getElementById('wchannel').addEventListener('click', function(){ const cid=this.dataset.cid; const title=this.textContent; if(cid){ closeVideo(); loadChannel(cid,title,true); } });
-
-// ---- search history ----
-function getHist(){ try{ return JSON.parse(localStorage.getItem('searchHist'))||[]; }catch(e){ return []; } }
-function addHist(q){ let h=getHist().filter(x=>x!==q); h.unshift(q); localStorage.setItem('searchHist',JSON.stringify(h.slice(0,12))); }
-function renderSuggest(filter){
-  let h=getHist(); if(filter){ const f=filter.toLowerCase(); h=h.filter(x=>x.toLowerCase().includes(f)); }
-  if(!h.length){ suggest.style.display='none'; return; }
-  suggest.innerHTML=h.map(q=>'<div class="sugrow" data-q="'+esc(q)+'">🕘 '+esc(q)+'</div>').join('');
-  suggest.style.display='block';
-}
-qInput.addEventListener('focus', ()=>renderSuggest(qInput.value.trim()));
-qInput.addEventListener('input', ()=>renderSuggest(qInput.value.trim()));
-qInput.addEventListener('blur', ()=>setTimeout(()=>{ suggest.style.display='none'; },180));
-suggest.addEventListener('mousedown', e=>{ const row=e.target.closest('.sugrow'); if(!row) return; qInput.value=row.dataset.q; suggest.style.display='none'; addHist(row.dataset.q); runSearch(row.dataset.q,true); });
-document.getElementById('searchForm').addEventListener('submit', e=>{ e.preventDefault(); const q=qInput.value.trim(); if(q){ addHist(q); suggest.style.display='none'; qInput.blur(); runSearch(q,true); } });
-
-// ---- settings UI ----
-function renderCats(){ document.getElementById('catList').innerHTML=SB_ALL.map(c=>'<label class="setrow"><span>'+c.name+'</span><input type="checkbox" data-cat="'+c.id+'" '+(settings.cats[c.id]?'checked':'')+'/></label>').join(''); }
-function openSettings(){ renderCats(); document.getElementById('modeSel').value=settings.mode; settingsEl.style.display='flex'; updateBack(); }
-function closeSettings(){ settingsEl.style.display='none'; updateBack(); }
-document.getElementById('gear').addEventListener('click', openSettings);
-document.getElementById('setBack').addEventListener('click', closeSettings);
-document.getElementById('modeSel').addEventListener('change', e=>{ settings.mode=e.target.value; saveSettings(); });
-document.getElementById('catList').addEventListener('change', e=>{ const cb=e.target.closest('input[data-cat]'); if(!cb) return; settings.cats[cb.dataset.cat]=cb.checked; saveSettings(); });
-
-// ---- back button ----
-function updateBack(){ if(!tg || !tg.BackButton) return; if(settingsEl.style.display==='flex'||watch.style.display==='flex') tg.BackButton.show(); else tg.BackButton.hide(); }
-function globalBack(){ if(settingsEl.style.display==='flex'){ closeSettings(); return; } if(watch.style.display==='flex'){ closeVideo(); return; } }
-document.getElementById('back').addEventListener('click', closeVideo);
-if(tg && tg.BackButton) tg.BackButton.onClick(globalBack);
-
-loadHome(true);
-</script>
-</body>
-</html>
+// ---------- views ----------
+async function loadHome(reset){if(reset){view={type:'home'};pageToken='';endReached=false;setNav('home');setListGrid(true);viewHeader.innerHTML='';list.innerHTML='';}if(endReached||loadingMore)return;loadingMore=true;show(loader);try{const d=await fetchCached(API+"/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=20&regionCode="+REGION+(pageToken?"&pageToken="+pageToken:"")+"&key="+API_KEY,600000);appendVideos(d.items);pageToken=d.nextPageToken||'';if(!pageToken)endReached=true;}catch(e){showErr(e);}loadingMore=false;hide(loader);}
+async function runSearch(q,reset){if(reset){view={type:'search',q:q};pageToken='';endReached=false;setNav('');setListGrid(true);viewHeader.innerHTML='';list.innerHTML='';}if(endReached||loadingMore)return;loadingMore=true;show(loader);try{const d=await fetchCached(API+"/search?part=snippet&type=video&maxResults=20&q="+encodeURIComponent(view.q)+(pageToken?"&pageToken="+pageToken:"")+"&key="+API_KEY,300000);pageToken=d.nextPageToken||'';if(!pageToken)endReached=true;const ids=d.items.map(i=>i.id.videoId).filter(Boolean).join(",");if(ids){const d2=await fetchCached(API+"/videos?part=snippet,statistics,contentDetails&id="+ids+"&key="+API_KEY,300000);appendVideos(d2.items);}else if(reset)list.innerHTML='<div class="loader">Ничего не найдено</div>';}catch(e){showErr(e);}loadingMore=false;hide(loader);}
+async function loadChannel(cid,title,reset){view={type:'channel',cid:cid,title:title,auth:false,plId:null};setNav('');setListGrid(true);viewHeader.innerHTML='<div class="chhead">'+esc(title||'Канал')+'</div>';list.innerHTML='';window.scrollTo(0,0);show(loader);await renderChannelHeader(cid,title);hide(loader);pageToken='';endReached=false;if(view.plId)loadPlaylistPage(true);else list.innerHTML='<div class="loader">Не удалось загрузить канал</div>';}
+async function renderChannelHeader(cid,title){try{const d=await fetchCached(API+"/channels?part=snippet,statistics,brandingSettings,contentDetails&id="+cid+"&key="+API_KEY,3600000);const c=d.items&&d.items[0];if(!c)return;view.plId=c.contentDetails.relatedPlaylists.uploads;const banner=c.brandingSettings&&c.brandingSettings.image&&c.brandingSettings.image.bannerExternalUrl;const av=c.snippet.thumbnails&&(c.snippet.thumbnails.medium||c.snippet.thumbnails.default);const subs=c.statistics&&c.statistics.subscriberCount?fmtViews(c.statistics.subscriberCount)+' подписчиков':'';viewHeader.innerHTML='<div class="chpage">'+(banner?'<img class="chbanner" src="'+banner+'=w1200"/>':'')+'<div class="chpageinfo"><img class="chpageav" src="'+(av?av.url:'')+'"/><div><div class="chpagename">'+esc(c.snippet.title)+'</div><div class="chpagesub">'+subs+'</div></div></div></div>';}catch(e){}}
+async function loadPlaylistPage(reset){if(reset){pageToken='';endReached=false;setListGrid(true);list.innerHTML='';if(view.type!=='channel')viewHeader.innerHTML=view.title?'<div class="chhead">'+esc(view.title)+'</div>':'';window.scrollTo(0,0);}if(endReached||loadingMore)return;loadingMore=true;show(loader);try{const useAuth=view.auth;const url=API+"/playlistItems?part=contentDetails&maxResults=20&playlistId="+view.plId+(pageToken?"&pageToken="+pageToken:"")+(useAuth?"":"&key="+API_KEY);const d=useAuth?await fetchJson(url,auth()):await fetchCached(url,600000);pageToken=d.nextPageToken||'';if(!pageToken)endReached=true;const ids=d.items.map(
